@@ -91,7 +91,16 @@ defmodule BotArmyGraphifyCache.NATS.Consumer do
 
         case subscribe_all(conn, self(), subjects_to_sub, []) do
           {:ok, subs} ->
-            BotArmyRuntime.Registry.register("graphify_cache", @subjects, @version)
+            deployment_status =
+              Application.get_env(:bot_army_graphify_cache, :deployment_status, "deployed")
+
+            BotArmyRuntime.Registry.register(
+              "graphify_cache",
+              @subjects,
+              @version,
+              deployment_status
+            )
+
             Process.send_after(self(), :registry_heartbeat, @registry_heartbeat_ms)
             Logger.info("[GraphifyCache] Subscribed to graph query subjects")
             Process.send_after(self(), :publish_health, 1_000)
